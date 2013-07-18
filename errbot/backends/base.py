@@ -254,7 +254,7 @@ class Backend(object):
         Message is NOT sent"""
         response = self.build_message(text)
         if private:
-            response.setTo(get_jid_from_message(mess))
+            response.setTo(mess.getFrom())
             response.setType('chat')
             response.setFrom(self.jid)
         else:
@@ -425,7 +425,7 @@ class Backend(object):
 
         def send_reply(reply):
             for part in split_string_after(reply, self.MESSAGE_SIZE_LIMIT):
-                self.send_simple_reply(mess, part, cmd in DIVERT_TO_PRIVATE)
+                self.send_simple_reply(mess, part, cmd in DIVERT_TO_PRIVATE or mess.getType() == "chat")
 
         try:
             if inspect.isgeneratorfunction(self.commands[cmd]):
@@ -443,7 +443,7 @@ class Backend(object):
             send_reply(self.MSG_ERROR_OCCURRED + ':\n %s' % e)
 
     def check_command_access(self, mess, cmd):
-        usr = str(get_jid_from_message(mess))
+        usr = str(mess.getFrom())
         typ = mess.getType()
 
         if cmd not in ACCESS_CONTROLS:
